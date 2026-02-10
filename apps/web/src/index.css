@@ -7,21 +7,84 @@
 }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
-  background-color: #0f172a;
-  color: #e2e8f0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background-color: #0f0f14;
+  color: #e5e5e5;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 3px;
+::selection {
+  background: rgba(99, 102, 241, 0.3);
+}
+
+/* Markdown prose styles */
+.markdown-body p { margin-bottom: 0.6rem; }
+.markdown-body p:last-child { margin-bottom: 0; }
+.markdown-body ul, .markdown-body ol { margin-bottom: 0.5rem; padding-left: 1.25rem; }
+.markdown-body li { margin-bottom: 0.2rem; }
+.markdown-body strong { color: rgba(255,255,255,0.95); font-weight: 600; }
+.markdown-body em { color: rgba(255,255,255,0.55); }
+.markdown-body code {
+  background: rgba(255,255,255,0.08);
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.3rem;
+  font-size: 0.8rem;
+  color: #a78bfa;
+}
+.markdown-body pre {
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.6rem;
+  overflow-x: auto;
+}
+.markdown-body pre code {
+  background: none;
+  padding: 0;
+  color: #a78bfa;
+}
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  color: rgba(255,255,255,0.9);
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+.markdown-body h1 { font-size: 1.05rem; }
+.markdown-body h2 { font-size: 0.95rem; }
+.markdown-body h3 { font-size: 0.85rem; }
+.markdown-body blockquote {
+  border-left: 2px solid rgba(139,92,246,0.3);
+  padding-left: 1rem;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 0.6rem;
+}
+.markdown-body a {
+  color: #8b5cf6;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.markdown-body hr {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  margin: 0.75rem 0;
 }

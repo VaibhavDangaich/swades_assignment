@@ -20,7 +20,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-full w-full bg-[#0f0f14]">
       <Sidebar
         activeId={activeConversation}
         onSelect={handleSelectConversation}

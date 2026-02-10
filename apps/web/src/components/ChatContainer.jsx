@@ -47,7 +47,6 @@ export default function ChatContainer({ conversationId, onConversationCreated })
       const decoder = new TextDecoder();
       let assistantContent = '';
       let currentAgentType = null;
-      let newConversationId = conversationId;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -64,7 +63,6 @@ export default function ChatContainer({ conversationId, onConversationCreated })
               currentAgentType = data.agentType;
               setAgentType(data.agentType);
               if (!conversationId && data.conversationId) {
-                newConversationId = data.conversationId;
                 onConversationCreated(data.conversationId);
               }
             }
@@ -88,10 +86,7 @@ export default function ChatContainer({ conversationId, onConversationCreated })
               });
             }
 
-            if (data.type === 'done') {
-              setIsLoading(false);
-            }
-
+            if (data.type === 'done') setIsLoading(false);
             if (data.type === 'error') {
               setMessages((prev) => [
                 ...prev,
@@ -99,80 +94,203 @@ export default function ChatContainer({ conversationId, onConversationCreated })
               ]);
               setIsLoading(false);
             }
-          } catch {
-            // skip malformed JSON
-          }
+          } catch { /* skip */ }
         }
       }
-
       setIsLoading(false);
-    } catch (err) {
+    } catch {
       setMessages((prev) => [
         ...prev,
-        { id: Date.now() + 2, role: 'assistant', content: 'Failed to connect to server.' },
+        { id: Date.now() + 2, role: 'assistant', content: 'Connection failed. Is the server running?' },
       ]);
       setIsLoading(false);
     }
   }
 
+  const suggestions = [
+    {
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+          <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z" />
+        </svg>
+      ),
+      label: 'Order Tracking',
+      desc: 'Check order status and delivery updates',
+      query: 'Where is my order ORD-001?',
+    },
+    {
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+          <line x1="1" y1="10" x2="23" y2="10" />
+        </svg>
+      ),
+      label: 'Billing & Refunds',
+      desc: 'Check invoices, payments, and refund status',
+      query: 'Check refund status for INV-002',
+    },
+    {
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      ),
+      label: 'General Support',
+      desc: 'Get help with account settings and more',
+      query: 'How do I reset my password?',
+    },
+  ];
+
   return (
-    <div className="flex-1 flex flex-col bg-slate-950">
+    <div className="flex-1 flex flex-col bg-[#18181f] min-w-0">
+      {/* Header */}
+      <div className="px-8 py-5 border-b border-white/[0.06] flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-sm shadow-violet-500/20">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-[14px] font-semibold text-white/90">Atlas Support</h2>
+            <p className="text-[11px] text-white/30">Typically replies in seconds</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <button className="w-8 h-8 rounded-lg hover:bg-white/[0.05] flex items-center justify-center text-white/25 hover:text-white/50 transition-colors cursor-pointer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </button>
+          <button className="w-8 h-8 rounded-lg hover:bg-white/[0.05] flex items-center justify-center text-white/25 hover:text-white/50 transition-colors cursor-pointer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="1" />
+              <circle cx="19" cy="12" r="1" />
+              <circle cx="5" cy="12" r="1" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Messages or Empty State */}
       {messages.length === 0 && !isLoading ? (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center text-2xl">
-              🤖
+        <div className="flex-1 flex items-center justify-center p-12">
+          <div className="text-center w-full max-w-2xl">
+            {/* Decorative Icon */}
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600/20 to-indigo-600/20 border border-violet-500/15 flex items-center justify-center mx-auto mb-6">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#grad)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <defs>
+                  <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: '#8b5cf6' }} />
+                    <stop offset="100%" style={{ stopColor: '#6366f1' }} />
+                  </linearGradient>
+                </defs>
+                <line x1="12" y1="2" x2="12" y2="6" />
+                <line x1="12" y1="18" x2="12" y2="22" />
+                <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
+                <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
+                <line x1="2" y1="12" x2="6" y2="12" />
+                <line x1="18" y1="12" x2="22" y2="12" />
+                <line x1="4.93" y1="19.07" x2="7.76" y2="16.24" />
+                <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
+              </svg>
             </div>
-            <h2 className="text-xl font-semibold text-slate-200">How can I help you?</h2>
-            <p className="text-slate-500 text-sm max-w-sm">
-              Ask about orders, billing, or general support. I'll route you to the right agent.
+
+            <h2 className="text-2xl font-semibold text-white/90 mb-2">How can I help you today?</h2>
+            <p className="text-[15px] text-white/35 mb-10 leading-relaxed max-w-md mx-auto">
+              I can help you troubleshoot issues, explain features, or process requests instantly.
             </p>
-            <div className="flex flex-wrap gap-2 justify-center mt-4">
-              {['Where is my order ORD-001?', 'I need a refund for INV-002', 'How do I reset my password?'].map(
-                (q) => (
-                  <button
-                    key={q}
-                    onClick={() => setInput(q)}
-                    className="px-3 py-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors cursor-pointer"
-                  >
-                    {q}
-                  </button>
-                )
-              )}
+
+            {/* Suggestion Cards */}
+            <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
+              {suggestions.map((s) => (
+                <button
+                  key={s.query}
+                  onClick={() => setInput(s.query)}
+                  className="group text-left bg-[#1e1e2e] hover:bg-[#252535] border border-white/[0.06] hover:border-violet-500/20 rounded-xl p-5 transition-all duration-200 cursor-pointer"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/15 flex items-center justify-center text-violet-400/70 mb-4">
+                    {s.icon}
+                  </div>
+                  <h3 className="text-[14px] font-medium text-white/80 group-hover:text-white/95 mb-1.5 transition-colors">{s.label}</h3>
+                  <p className="text-[12px] text-white/30 leading-relaxed mb-4">{s.desc}</p>
+                  <div className="flex items-center text-violet-400/50 group-hover:text-violet-400/80 transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                      <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto py-4 space-y-2">
-          {messages.map((msg) => (
-            <MessageBubble key={msg.id} message={msg} />
-          ))}
-          {isLoading && !messages.some((m) => m.role === 'assistant' && m.content) && (
-            <TypingIndicator agentType={agentType} />
-          )}
-          <div ref={messagesEndRef} />
+        <div className="flex-1 overflow-y-auto">
+          {/* Date Divider */}
+          <div className="flex items-center justify-center py-5">
+            <span className="text-[11px] font-medium text-white/20 uppercase tracking-wider">Today</span>
+          </div>
+          <div className="max-w-4xl mx-auto px-10 pb-8">
+            {messages.map((msg) => (
+              <MessageBubble key={msg.id} message={msg} />
+            ))}
+            {isLoading && !messages.some((m) => m.role === 'assistant' && m.content) && (
+              <TypingIndicator agentType={agentType} />
+            )}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
       )}
 
-      <form onSubmit={handleSend} className="p-4 border-t border-slate-800">
-        <div className="flex gap-3 max-w-3xl mx-auto">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            disabled={isLoading}
-            className="flex-1 px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 disabled:opacity-50 transition-all"
-          />
-          <button
-            type="submit"
-            disabled={isLoading || !input.trim()}
-            className="px-5 py-3 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white rounded-xl font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
-          >
-            Send
-          </button>
-        </div>
-      </form>
+      {/* Input */}
+      <div className="shrink-0 px-8 pb-4 pt-4">
+        <form onSubmit={handleSend} className="max-w-4xl mx-auto">
+          <div className="flex items-center bg-[#1e1e2e] border border-white/[0.06] rounded-2xl px-4 py-2 focus-within:border-violet-500/30 transition-all duration-200">
+            <button type="button" className="w-8 h-8 rounded-lg hover:bg-white/[0.05] flex items-center justify-center text-white/25 hover:text-white/50 transition-colors cursor-pointer shrink-0 mr-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="16" />
+                <line x1="8" y1="12" x2="16" y2="12" />
+              </svg>
+            </button>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type your message..."
+              disabled={isLoading}
+              className="flex-1 py-2.5 bg-transparent text-[14px] text-white/90 placeholder-white/25 focus:outline-none disabled:opacity-40"
+            />
+            <div className="flex items-center gap-1 shrink-0 ml-2">
+              <button type="button" className="w-8 h-8 rounded-lg hover:bg-white/[0.05] flex items-center justify-center text-white/25 hover:text-white/50 transition-colors cursor-pointer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <line x1="12" y1="19" x2="12" y2="23" />
+                  <line x1="8" y1="23" x2="16" y2="23" />
+                </svg>
+              </button>
+              <button
+                type="submit"
+                disabled={isLoading || !input.trim()}
+                className="w-9 h-9 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 flex items-center justify-center text-white disabled:opacity-25 disabled:cursor-not-allowed transition-all cursor-pointer shadow-lg shadow-violet-600/20"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </form>
+        <p className="text-center text-[10px] text-white/15 mt-2">AI can make mistakes. Consider checking important information.</p>
+      </div>
     </div>
   );
 }
