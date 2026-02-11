@@ -10,6 +10,7 @@
     "lint": "echo 'No lint configured'"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.60.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0"
